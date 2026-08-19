@@ -94,12 +94,23 @@ function App() {
           (containers[i] as HTMLElement).style.overflow = 'visible';
         }
 
+        // Ép kích thước phần tử thành desktop (1000px) để ảnh chụp luôn rộng rãi và không bị vỡ layout trên mobile
+        const originalWidth = element.style.width;
+        const originalMaxWidth = element.style.maxWidth;
+        element.style.width = '1000px';
+        element.style.maxWidth = 'none';
+
+        // Đợi 1 chút để trình duyệt cập nhật lại giao diện theo kích thước mới
+        await new Promise(resolve => setTimeout(resolve, 50));
+
         const dataUrl = await toPng(element, { 
           backgroundColor: '#0f172a',
           pixelRatio: 2 // Higher resolution
         });
 
-        // Khôi phục lại thanh cuộn
+        // Khôi phục lại thanh cuộn và kích thước ban đầu
+        element.style.width = originalWidth;
+        element.style.maxWidth = originalMaxWidth;
         for (let i = 0; i < containers.length; i++) {
           (containers[i] as HTMLElement).style.overflow = '';
         }
