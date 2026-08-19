@@ -90,10 +90,10 @@ export const SetupSection: React.FC<Props> = ({
                 {availableSuggestions.map((name, index) => (
                   <div
                     key={name}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => {
                       onAddPerson(name);
                       setNewPersonName('');
-                      setShowSuggestions(false);
                     }}
                     style={{
                        padding: '0.6rem 1rem',
