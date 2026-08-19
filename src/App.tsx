@@ -11,6 +11,7 @@ import { toPng } from 'html-to-image';
 function App() {
   const [persons, setPersons] = useState<Person[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
   const handleAddPerson = (name: string) => {
     const newPerson: Person = {
@@ -103,10 +104,35 @@ function App() {
           (containers[i] as HTMLElement).style.overflow = '';
         }
 
-        const link = document.createElement('a');
-        link.download = 'bao-cao-chia-tien.png';
-        link.href = dataUrl;
-        link.click();
+        // Dùng Web Share API (native trên điện thoại) nếu có hỗ trợ
+        try {
+          if (navigator.canShare) {
+            const blob = await (await fetch(dataUrl)).blob();
+            const file = new File([blob], 'bao-cao-chia-tien.png', { type: 'image/png' });
+            
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                files: [file],
+                title: 'Báo cáo chia tiền',
+              });
+              return; // Thành công thì kết thúc
+            }
+          }
+        } catch (shareError) {
+          console.log("Share API error:", shareError);
+        }
+
+        // Fallback: Hiển thị ảnh trên màn hình nếu là thiết bị di động để người dùng tự nhấn giữ lưu
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+          setCapturedImage(dataUrl);
+        } else {
+          // Tải xuống kiểu truyền thống cho máy tính
+          const link = document.createElement('a');
+          link.download = 'bao-cao-chia-tien.png';
+          link.href = dataUrl;
+          link.click();
+        }
       } catch (error) {
         console.error("Error capturing image:", error);
         alert("Có lỗi xảy ra khi chụp ảnh!");
@@ -115,15 +141,15 @@ function App() {
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
+    <div className="app-container">
       <header className="flex flex-col items-center justify-center mb-8 gap-4">
-        <div className="flex items-center justify-between w-full flex-wrap gap-4">
-          <div style={{ flex: 1 }}></div>
-          <div className="flex items-center gap-3 justify-center" style={{ background: 'rgba(59, 130, 246, 0.2)', padding: '1rem 2rem', borderRadius: '100px', border: '1px solid rgba(59, 130, 246, 0.5)' }}>
+        <div className="flex items-center justify-between w-full flex-wrap gap-4 header-top">
+          <div className="header-spacer" style={{ flex: 1 }}></div>
+          <div className="flex items-center gap-3 justify-center header-title-container" style={{ background: 'rgba(59, 130, 246, 0.2)', padding: '1rem 2rem', borderRadius: '100px', border: '1px solid rgba(59, 130, 246, 0.5)' }}>
             <Coins size={32} className="text-accent" />
             <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800 }}>Ứng Dụng Chia Tiền</h1>
           </div>
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <div className="header-actions" style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
             <button onClick={handleCapture} style={{ background: 'var(--success-color)' }}>
               <Camera size={20} /> Lưu Ảnh Báo Cáo
             </button>
@@ -162,6 +188,24 @@ function App() {
           expenses={expenses}
         />
       </div>
+
+      {/* Modal hiển thị ảnh cho thiết bị di động (khi Share API không khả dụng) */}
+      {capturedImage && (
+        <div 
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+          onClick={() => setCapturedImage(null)}
+        >
+          <p style={{ color: 'white', marginBottom: '1rem', textAlign: 'center', fontSize: '1.1rem' }}>
+            Nhấn giữ vào ảnh bên dưới để lưu vào máy<br/>
+            <small style={{ color: '#94a3b8' }}>(Chạm ra ngoài để đóng)</small>
+          </p>
+          <img 
+            src={capturedImage} 
+            alt="Báo cáo chia tiền" 
+            style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }} 
+          />
+        </div>
+      )}
     </div>
   );
 }

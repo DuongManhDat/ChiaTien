@@ -47,9 +47,9 @@ export const SetupSection: React.FC<Props> = ({
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full" style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+    <div className="flex flex-col gap-6 w-full setup-container" style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
       {/* People Setup */}
-      <div className="glass-panel" style={{ flex: 1, minWidth: '300px' }}>
+      <div className="glass-panel setup-panel" style={{ flex: 1, minWidth: '300px' }}>
         <h2 className="flex items-center gap-2">
           <Users size={24} className="text-accent" /> 
           Người tham gia {persons.length > 0 && <span className="text-secondary" style={{ fontSize: '1.2rem', fontWeight: 'normal' }}>({persons.length})</span>}
@@ -76,7 +76,7 @@ export const SetupSection: React.FC<Props> = ({
       </div>
 
       {/* Expenses Setup */}
-      <div className="glass-panel" style={{ flex: 1, minWidth: '300px' }}>
+      <div className="glass-panel setup-panel" style={{ flex: 1, minWidth: '300px' }}>
         <h2 className="flex items-center gap-2">
           <Receipt size={24} className="text-accent" /> 
           Các khoản chi {expenses.length > 0 && <span className="text-secondary" style={{ fontSize: '1.2rem', fontWeight: 'normal' }}>({expenses.length})</span>}
