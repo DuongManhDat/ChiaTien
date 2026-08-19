@@ -21,6 +21,12 @@ export const SetupSection: React.FC<Props> = ({
 }) => {
   const [newPersonName, setNewPersonName] = useState('');
   const [newExpenseName, setNewExpenseName] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const defaultNames = ["Đạt", "Trà", "Oanh", "Chi", "Ánh", "Nhung", "Miu", "Bun", "Hào", "Trang", "A Kỳ", "Nhi", "Huy", "Tuấn"];
+  const availableSuggestions = defaultNames.filter(
+    name => !persons.some(p => p.name.toLowerCase() === name.toLowerCase()) && name.toLowerCase().includes(newPersonName.toLowerCase())
+  );
 
   const handleAddPerson = () => {
     const name = newPersonName.trim();
@@ -54,14 +60,56 @@ export const SetupSection: React.FC<Props> = ({
           <Users size={24} className="text-accent" /> 
           Người tham gia {persons.length > 0 && <span className="text-secondary" style={{ fontSize: '1.2rem', fontWeight: 'normal' }}>({persons.length})</span>}
         </h2>
-        <div className="flex gap-2 mb-4">
-          <input
-            type="text"
-            placeholder="Tên người tham gia..."
-            value={newPersonName}
-            onChange={(e) => setNewPersonName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAddPerson()}
-          />
+        <div className="flex gap-2 mb-4" style={{ position: 'relative' }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="Tên người tham gia..."
+              value={newPersonName}
+              onChange={(e) => setNewPersonName(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddPerson()}
+            />
+            {showSuggestions && availableSuggestions.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                background: 'rgba(30, 41, 59, 0.95)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid var(--surface-border)',
+                borderRadius: '8px',
+                marginTop: '4px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                zIndex: 9999,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+              }}>
+                {availableSuggestions.map((name, index) => (
+                  <div
+                    key={name}
+                    onClick={() => {
+                      onAddPerson(name);
+                      setNewPersonName('');
+                      setShowSuggestions(false);
+                    }}
+                    style={{
+                       padding: '0.6rem 1rem',
+                       cursor: 'pointer',
+                       borderBottom: index === availableSuggestions.length - 1 ? 'none' : '1px solid var(--surface-border)',
+                       transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    {name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <button onClick={handleAddPerson}><Plus size={20} /> Thêm</button>
         </div>
         <div className="flex flex-col gap-2">
